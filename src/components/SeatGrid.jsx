@@ -42,7 +42,7 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
 
   const isPairLayout = seatLayout === 'pair'
 
-  // pair 레이아웃일 때 배정 데이터를 그룹화
+  // pair 
   const getPairGroups = () => {
     if (!isPairLayout || assignment.length === 0) return []
 
