@@ -737,7 +737,11 @@ function App() {
             {/* 계층 1: 화면 배치용 (캡처되지 않음) */}
             <div className="w-full flex justify-center overflow-auto">
               {/* 계층 2: 캡처 타겟 (ref 연결) */}
-              <div ref={seatGridRef} id="seat-grid-container" className="w-fit h-fit bg-white p-4 inline-flex gap-4">
+              <div
+                ref={seatGridRef}
+                id="seat-grid-container"
+                className="w-fit h-fit bg-white flex flex-col items-center justify-center gap-10 p-12"
+              >
                 {/* 계층 3: 내용물 (창가 + 좌석 + 복도) */}
                 <SeatGrid
                   layout={SEAT_LAYOUTS[seatLayout]}
