@@ -260,7 +260,10 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
   } else {
     if (assignment.length === 0) {
       seatArea = (
-        <div className="text-center text-gray-500 py-8" style={{ transform: 'scaleY(-1)' }}>
+        <div
+          className="text-center text-gray-500 py-8"
+          style={{ transform: 'scaleY(-1)' }}
+        >
           좌석 배정을 시작하려면 "자리 배정하기" 버튼을 클릭하세요.
         </div>
       )
@@ -340,10 +343,10 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
   }
 
   return (
-    <div id="seat-grid-wrapper" className="bg-white rounded-lg shadow-lg p-6">
+    <div id="seat-grid-wrapper" className="bg-white rounded-lg shadow-lg p-6 py-8">
       <div
         id="seat-grid-content"
-        className="w-full flex flex-col gap-4"
+        className="w-full flex flex-col gap-8"
         style={{ display: 'inline-block', width: 'fit-content', minWidth: '100%' }}
       >
         <h2 className="text-2xl font-bold text-gray-800 text-center">
