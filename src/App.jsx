@@ -751,13 +751,6 @@ function App() {
                 />
               </div>
             </div>
-
-            {/* 교탁: 좌석 아래 배치 (교사 시점) */}
-            <div className="flex justify-center">
-              <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-4 rounded-lg shadow-md font-bold text-lg">
-                🖥️ 교탁
-              </div>
-            </div>
           </div>
         </div>
       </div>
