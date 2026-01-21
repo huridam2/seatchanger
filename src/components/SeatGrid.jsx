@@ -343,7 +343,7 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
   }
 
   return (
-    <div id="seat-grid-wrapper" className="bg-white rounded-lg shadow-lg p-6 py-8">
+    <div id="seat-grid-wrapper" className="bg-white rounded-lg shadow-lg px-6 py-16 flex flex-col items-center justify-center gap-12">
       <div
         id="seat-grid-content"
         className="w-full flex flex-col gap-8"
@@ -387,3 +387,5 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
 }
 
 export default SeatGrid
+
+// Layout Fixed v2
