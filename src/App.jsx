@@ -23,6 +23,30 @@ function App() {
   const [isDownloading, setIsDownloading] = useState(false) // 이미지 다운로드 로딩 상태
   const seatGridRef = useRef(null) // 좌석 배치도 참조용
 
+  // 샘플 데이터로 체험하기
+  const handleLoadSampleData = () => {
+    const sampleNames = [
+      '김철수', '이영희', '박지민', '최수빈', '정민준',
+      '한소희', '윤서연', '강도현', '임태양', '오지훈',
+      '신유진', '조현우', '배수지', '송민서', '황지호',
+      '김민지', '이준호', '박서준', '최예은', '정하늘',
+      '한지원', '윤도윤', '강서윤', '임채원', '오시우',
+      '신하은', '조민재', '배서아', '송지우', '황예준'
+    ]
+
+    const sampleStudents = sampleNames.map((name, index) => ({
+      id: `student-${index}`,
+      number: String(index + 1),
+      name: name,
+    }))
+
+    // 기존 데이터 초기화
+    setStudents(sampleStudents)
+    setForbiddenPairs([])
+    setSeatAssignment([])
+    setLockedSeats(new Set())
+  }
+
   // CSV 파일 업로드
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
@@ -708,16 +732,26 @@ function App() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CSV 파일 업로드
-            </label>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-            />
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                CSV 파일 업로드
+              </label>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              />
+            </div>
+            <div>
+              <button
+                onClick={handleLoadSampleData}
+                className="w-full bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors font-medium text-sm"
+              >
+                🎮 샘플 데이터로 체험하기
+              </button>
+            </div>
           </div>
         </div>
 
@@ -740,7 +774,8 @@ function App() {
               <div
                 ref={seatGridRef}
                 id="seat-grid-container"
-                className="w-fit h-fit bg-white flex flex-col items-center justify-center p-12"
+                className="w-fit h-fit bg-white flex flex-col items-center justify-center p-5"
+                style={{ display: 'inline-block' }}
               >
                 {/* 1. 제목 영역 */}
                 <h2 className="text-2xl font-bold text-gray-800 text-center">
