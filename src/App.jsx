@@ -621,6 +621,26 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* [모바일 최적화 스타일 추가]
+        화면 너비가 640px 이하(모바일)일 때, 배치도 컨테이너(#seat-grid-container)를
+        강제로 0.5배~0.6배로 축소시켜서 화면에 다 들어오게 만듭니다.
+      */}
+      <style>{`
+        @media (max-width: 640px) {
+          #seat-grid-container {
+            zoom: 0.55; /* 모바일에서 55% 크기로 축소 */
+          }
+          /* 아이폰/사파리 대응을 위한 fallback */
+          @supports not (zoom: 1) {
+            #seat-grid-container {
+              transform: scale(0.55);
+              transform-origin: top center;
+              margin-bottom: -45%;
+            }
+          }
+        }
+      `}</style>
+
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
           🎉 신나는 자리바꾸기
@@ -793,6 +813,11 @@ function App() {
                   </div>
                 </div>
               )}
+            </div>
+            
+            {/* 모바일에서 화면 회전 안내 팁 추가 */}
+            <div className="block md:hidden text-center text-gray-500 text-sm mt-2">
+              💡 화면을 가로로 돌리면 더 크게 볼 수 있어요!
             </div>
           </div>
         </div>
