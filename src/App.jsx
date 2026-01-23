@@ -40,7 +40,7 @@ function App() {
       name: name,
     }))
 
-    // 기존 데이터 초기화
+    // 기존 데이터 초기화 및 샘플 로드
     setStudents(sampleStudents)
     setForbiddenPairs([])
     setSeatAssignment([])
@@ -520,7 +520,7 @@ function App() {
     setLockedSeats(newLockedSeats)
   }
 
-  // 이미지 다운로드 (A4 가로 사이즈)
+  // 이미지 다운로드 (수정됨: 보이는 그대로 여백 없이 다운로드)
   const handleDownloadImage = async () => {
     if (seatAssignment.length === 0) {
       alert('배정된 좌석이 없습니다.')
@@ -532,58 +532,20 @@ function App() {
       return
     }
 
-    // 로딩 상태 시작
     setIsDownloading(true)
 
     try {
-      // A4 가로 사이즈: 297mm x 210mm = 1123px x 794px (96 DPI 기준)
-      // 더 높은 해상도를 위해 150 DPI 사용: 1654px x 1169px
-      const a4Width = 1654
-      const a4Height = 1169
-
       const element = seatGridRef.current
 
-      // html2canvas 옵션 단순화 (안정성 우선)
-      const options = {
-        scale: 4,           // 고화질
-        useCORS: true,      // 혹시 모를 이미지 이슈 방지
-        backgroundColor: '#ffffff' // 배경색 흰색 고정
-      }
+      // html2canvas로 캡처 (A4 강제 변환 로직 제거하고 직접 캡처)
+      const canvas = await html2canvas(element, {
+        scale: 3, // 고해상도
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
 
-      const canvas = await html2canvas(element, options)
-
-      // A4 비율에 맞게 리사이즈
-      const aspectRatio = a4Width / a4Height
-      const canvasAspectRatio = canvas.width / canvas.height
-
-      let finalWidth, finalHeight
-      if (canvasAspectRatio > aspectRatio) {
-        // 캔버스가 더 넓음 - 너비 기준
-        finalWidth = a4Width
-        finalHeight = a4Width / canvasAspectRatio
-      } else {
-        // 캔버스가 더 높음 - 높이 기준
-        finalHeight = a4Height
-        finalWidth = a4Height * canvasAspectRatio
-      }
-
-      // 새 캔버스 생성 (A4 사이즈)
-      const finalCanvas = document.createElement('canvas')
-      finalCanvas.width = a4Width
-      finalCanvas.height = a4Height
-      const ctx = finalCanvas.getContext('2d')
-
-      // 흰색 배경
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, a4Width, a4Height)
-
-      // 원본 이미지를 중앙에 배치
-      const x = (a4Width - finalWidth) / 2
-      const y = (a4Height - finalHeight) / 2
-      ctx.drawImage(canvas, x, y, finalWidth, finalHeight)
-
-      // PNG로 다운로드
-      finalCanvas.toBlob((blob) => {
+      // 캡처된 그대로 다운로드 (여백 없음)
+      canvas.toBlob((blob) => {
         if (blob) {
           saveAs(blob, `자리배정_${new Date().toISOString().split('T')[0]}.png`)
         }
@@ -592,7 +554,6 @@ function App() {
       console.error('이미지 다운로드 오류:', error)
       alert('이미지 다운로드 중 오류가 발생했습니다.')
     } finally {
-      // 성공하든 실패하든 반드시 로딩 상태 해제
       setIsDownloading(false)
     }
   }
@@ -719,7 +680,7 @@ function App() {
                 className="flex-1 bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <span className="text-base flex-shrink-0">📥</span>
-                <span className="whitespace-nowrap">{isDownloading ? '다운로드 중...' : '배정 결과 다운로드'}</span>
+                <span className="whitespace-nowrap">{isDownloading ? '다운로드 중...' : '이미지 저장'}</span>
               </button>
               <button
                 onClick={handleDownloadStudentList}
@@ -727,7 +688,7 @@ function App() {
                 className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <span className="text-base flex-shrink-0">📋</span>
-                <span className="whitespace-nowrap">명단 다운로드</span>
+                <span className="whitespace-nowrap">명단 저장</span>
               </button>
             </div>
           </div>
@@ -743,14 +704,6 @@ function App() {
                 onChange={handleFileUpload}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
               />
-            </div>
-            <div>
-              <button
-                onClick={handleLoadSampleData}
-                className="w-full bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors font-medium text-sm"
-              >
-                🎮 샘플 데이터로 체험하기
-              </button>
             </div>
           </div>
         </div>
@@ -768,51 +721,69 @@ function App() {
 
           {/* 중앙: 좌석 배치 */}
           <div className="lg:col-span-3 flex flex-col gap-4">
-            {/* 바깥쪽 래퍼: 화면 중앙 정렬만 담당 (캡처되지 않음, 배경 투명) */}
+            {/* 바깥쪽 래퍼: 화면 중앙 정렬 담당 */}
             <div className="w-full text-center overflow-auto" style={{ backgroundColor: 'transparent' }}>
-              {/* 안쪽 컨테이너: 실제 캡처 타겟 (ref 연결) */}
-              <div
-                ref={seatGridRef}
-                id="seat-grid-container"
-                style={{
-                  display: 'inline-block',
-                  width: 'auto',
-                  padding: '20px',
-                  backgroundColor: 'white'
-                }}
-              >
-                <div className="flex flex-col items-center justify-center">
-                  {/* 1. 제목 영역 */}
-                  <h2 className="text-2xl font-bold text-gray-800 text-center">
-                    교실 배치도
-                  </h2>
+              
+              {/* [수정됨] 학생 데이터가 없을 때: 초기 안내 화면 표시 */}
+              {students.length === 0 ? (
+                <div className="bg-white rounded-lg shadow-md p-12 flex flex-col items-center justify-center h-96 border-2 border-dashed border-gray-300">
+                  <div className="text-6xl mb-6">👋</div>
+                  <h3 className="text-2xl font-bold text-gray-700 mb-4">환영합니다!</h3>
+                  <p className="text-gray-500 mb-8 text-center max-w-md">
+                    왼쪽에서 학생 명단을 추가하거나, <br/>아래 버튼을 눌러 예시 데이터로 바로 시작해보세요.
+                  </p>
+                  <button
+                    onClick={handleLoadSampleData}
+                    className="bg-purple-600 text-white px-8 py-3 rounded-full hover:bg-purple-700 transition-all transform hover:scale-105 shadow-lg font-bold flex items-center gap-2"
+                  >
+                    <span>🎮</span> 예시 데이터로 체험하기
+                  </button>
+                </div>
+              ) : (
+                /* 학생 데이터가 있을 때: 기존 배치도 표시 */
+                <div
+                  ref={seatGridRef}
+                  id="seat-grid-container"
+                  style={{
+                    display: 'inline-block', // [중요] 내용물 크기만큼만 박스가 줄어듦
+                    width: 'auto',           
+                    padding: '20px',         // 여백 최소화
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    {/* 1. 제목 영역 */}
+                    <h2 className="text-2xl font-bold text-gray-800 text-center">
+                      교실 배치도
+                    </h2>
 
-                  {/* 2. 강제 여백 박스 1 (높이 60px) */}
-                  <div style={{ height: '60px' }}></div>
+                    {/* 2. 상단 여백 */}
+                    <div style={{ height: '40px' }}></div>
 
-                  {/* 3. 좌석 영역 (창가-좌석-복도) */}
-                  <SeatGrid
-                    layout={SEAT_LAYOUTS[seatLayout]}
-                    seatLayout={seatLayout}
-                    assignment={seatAssignment}
-                    onSeatUpdate={handleSeatUpdate}
-                    onSeatLock={handleSeatLock}
-                    pairsPerRow={pairsPerRow}
-                    colsPerRow={colsPerRow}
-                    lockedSeats={lockedSeats}
-                  />
+                    {/* 3. 좌석 영역 */}
+                    <SeatGrid
+                      layout={SEAT_LAYOUTS[seatLayout]}
+                      seatLayout={seatLayout}
+                      assignment={seatAssignment}
+                      onSeatUpdate={handleSeatUpdate}
+                      onSeatLock={handleSeatLock}
+                      pairsPerRow={pairsPerRow}
+                      colsPerRow={colsPerRow}
+                      lockedSeats={lockedSeats}
+                    />
 
-                  {/* 4. 강제 여백 박스 2 (높이 60px) */}
-                  <div style={{ height: '60px' }}></div>
+                    {/* 4. 하단 여백 */}
+                    <div style={{ height: '40px' }}></div>
 
-                  {/* 5. 교탁 */}
-                  <div className="flex justify-center">
-                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-4 rounded-lg shadow-md font-bold text-lg">
-                      🖥️ 교탁
+                    {/* 5. 교탁 */}
+                    <div className="flex justify-center">
+                      <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-3 rounded-lg shadow-md font-bold text-lg">
+                        🖥️ 교탁
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -822,4 +793,3 @@ function App() {
 }
 
 export default App
-
