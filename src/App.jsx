@@ -69,7 +69,7 @@ function App() {
         const numberColumn = results.meta.fields?.find(
           field => field === '번호' || field === 'number' || field === 'Number' || field === '번호'
         ) || '번호'
-        
+
         const nameColumn = results.meta.fields?.find(
           field => field === '이름' || field === 'name' || field === 'Name'
         ) || '이름'
@@ -83,20 +83,20 @@ function App() {
         results.data.forEach((row) => {
           // 첫 번째 컬럼(번호)의 값 가져오기
           const firstColumnValue = String(row[firstColumn] || '').trim()
-          
+
           // 그룹 A: 첫 번째 컬럼에 값이 있는 행만 학생으로 처리
           if (firstColumnValue && firstColumnValue !== '') {
             // 번호와 이름 컬럼에서 값 가져오기
             const number = String(row[numberColumn] || row[firstColumn] || '').trim()
             const name = String(row[nameColumn] || '').trim()
-            
+
             // 번호와 이름이 모두 있어야 학생으로 인식
             if (number && name && name !== '') {
               // 중복 체크 (같은 번호나 이름이 이미 있는지)
               const duplicate = parsedStudents.some(
                 s => s.number === number || s.name === name
               )
-              
+
               if (!duplicate) {
                 parsedStudents.push({
                   id: `student-${studentIndex}`,
@@ -111,16 +111,16 @@ function App() {
           else if (!firstColumnValue || firstColumnValue === '') {
             const secondValue = String(row[secondColumn] || '').trim()
             const thirdValue = String(row[thirdColumn] || '').trim()
-            
+
             // 두 번째와 세 번째 컬럼에 모두 텍스트가 있어야 짝 금지로 인식
-            if (secondValue && thirdValue && 
-                secondValue !== '' && thirdValue !== '' &&
-                !isNaN(secondValue) === false && !isNaN(thirdValue) === false) {
-              
+            if (secondValue && thirdValue &&
+              secondValue !== '' && thirdValue !== '' &&
+              !isNaN(secondValue) === false && !isNaN(thirdValue) === false) {
+
               // 학생 목록에서 해당 이름을 가진 학생 찾기
               const student1 = parsedStudents.find(s => s.name === secondValue)
               const student2 = parsedStudents.find(s => s.name === thirdValue)
-              
+
               if (student1 && student2 && student1.id !== student2.id) {
                 // 중복 체크
                 const exists = parsedForbiddenPairs.some(
@@ -128,7 +128,7 @@ function App() {
                     (pair.student1Id === student1.id && pair.student2Id === student2.id) ||
                     (pair.student1Id === student2.id && pair.student2Id === student1.id)
                 )
-                
+
                 if (!exists) {
                   parsedForbiddenPairs.push({
                     student1Id: student1.id,
@@ -139,7 +139,7 @@ function App() {
             }
           }
         })
-        
+
         setStudents(parsedStudents)
         setForbiddenPairs(parsedForbiddenPairs)
       },
@@ -161,7 +161,7 @@ function App() {
 
   // 학생 수정
   const handleUpdateStudent = (id, number, name) => {
-    setStudents(students.map(s => 
+    setStudents(students.map(s =>
       s.id === id ? { ...s, number: String(number), name: String(name).trim() } : s
     ))
   }
@@ -170,7 +170,7 @@ function App() {
   const handleDeleteStudent = (id) => {
     setStudents(students.filter(s => s.id !== id))
     // 해당 학생의 짝 금지도 제거
-    setForbiddenPairs(forbiddenPairs.filter(pair => 
+    setForbiddenPairs(forbiddenPairs.filter(pair =>
       pair.student1Id !== id && pair.student2Id !== id
     ))
   }
@@ -178,7 +178,7 @@ function App() {
   // 랜덤 배정 알고리즘
   const assignSeats = useCallback(() => {
     const layout = SEAT_LAYOUTS[seatLayout]
-    
+
     if (students.length === 0) {
       alert('학생 명단을 먼저 입력해주세요.')
       return
@@ -194,7 +194,7 @@ function App() {
       // 짝 금지 조건을 만족하는 배정 찾기 (최대 1000번 시도)
       let attempts = 0
       const maxAttempts = 1000
-      
+
       while (attempts < maxAttempts) {
         // 1단계: 잠긴 자리에 있는 학생들 추출 및 고정 (고정석 확보)
         const lockedStudentsMap = new Map()
@@ -225,7 +225,7 @@ function App() {
 
         // 4단계: movableStudents를 랜덤으로 섞기
         const shuffled = [...movableStudents].sort(() => Math.random() - 0.5)
-        
+
         // 5단계: newSeats 배열 생성, 잠긴 자리는 기존 학생 그대로 고정
         const newSeats = []
         let shuffledIndex = 0
@@ -234,13 +234,13 @@ function App() {
         // 필요한 행 수 계산
         const totalStudents = movableStudents.length + lockedStudentsMap.size
         const requiredRows = Math.ceil(totalStudents / (pairsPerRow * 2))
-        
+
         // 모든 좌석을 생성: 잠긴 자리는 고정, 나머지는 빈 자리로 초기화
         for (let r = 0; r < requiredRows; r++) {
           for (let p = 0; p < pairsPerRow; p++) {
             const key1 = `${r}-${p * 2}`
             const key2 = `${r}-${p * 2 + 1}`
-            
+
             // 첫 번째 좌석
             if (lockedSeats.has(key1)) {
               // 잠긴 자리: 기존 학생 그대로 고정
@@ -259,7 +259,7 @@ function App() {
                 pairIndex: p,
               })
             }
-            
+
             // 두 번째 좌석
             if (lockedSeats.has(key2)) {
               // 잠긴 자리: 기존 학생 그대로 고정
@@ -293,7 +293,7 @@ function App() {
         for (const pair of forbiddenPairs) {
           const seat1 = newSeats.find(s => s.student?.id === pair.student1Id)
           const seat2 = newSeats.find(s => s.student?.id === pair.student2Id)
-          
+
           if (seat1 && seat2) {
             // 같은 짝(pairIndex)에 있는지 확인
             if (seat1.row === seat2.row && seat1.pairIndex === seat2.pairIndex) {
@@ -368,11 +368,11 @@ function App() {
     // 짝 금지 조건을 만족하는 배정 찾기 (최대 1000번 시도)
     let attempts = 0
     const maxAttempts = 1000
-    
+
     while (attempts < maxAttempts) {
       // 4단계: movableStudents를 랜덤으로 섞기
       const shuffled = [...movableStudents].sort(() => Math.random() - 0.5)
-      
+
       // 5단계: newSeats 배열 생성, 잠긴 자리는 기존 학생 그대로 고정
       const newSeats = []
       let shuffledIndex = 0
@@ -428,7 +428,7 @@ function App() {
       // ㄷ자 형태의 경우 중간 행의 중간 열은 건너뜀
       for (let i = 0; i < newSeats.length; i++) {
         const seat = newSeats[i]
-        
+
         if (seatLayout === 'ㄷ자') {
           // ㄷ자 형태: 첫 번째와 마지막 행은 전체 열 사용, 중간 행은 양쪽 끝만 사용
           if (seat.row === 0 || seat.row === requiredRows - 1) {
@@ -457,12 +457,12 @@ function App() {
       for (const pair of forbiddenPairs) {
         const seat1 = newSeats.find(s => s.student?.id === pair.student1Id)
         const seat2 = newSeats.find(s => s.student?.id === pair.student2Id)
-        
+
         if (seat1 && seat2) {
           // 인접한 좌석인지 확인
           const rowDiff = Math.abs(seat1.row - seat2.row)
           const colDiff = Math.abs(seat1.col - seat2.col)
-          
+
           // 같은 행 또는 같은 열에서 인접한 경우 (거리 1)
           if ((rowDiff === 0 && colDiff === 1) || (rowDiff === 1 && colDiff === 0)) {
             valid = false
@@ -488,16 +488,16 @@ function App() {
   const handleSeatUpdate = (fromRow, fromCol, toRow, toCol) => {
     const fromKey = `${fromRow}-${fromCol}`
     const toKey = `${toRow}-${toCol}`
-    
+
     // 잠긴 자리는 이동 불가
     if (lockedSeats.has(fromKey) || lockedSeats.has(toKey)) {
       return
     }
-    
+
     const newAssignment = [...seatAssignment]
     const fromIndex = newAssignment.findIndex(s => s.row === fromRow && s.col === fromCol)
     const toIndex = newAssignment.findIndex(s => s.row === toRow && s.col === toCol)
-    
+
     if (fromIndex !== -1 && toIndex !== -1) {
       const temp = newAssignment[fromIndex].student
       newAssignment[fromIndex].student = newAssignment[toIndex].student
@@ -510,85 +510,85 @@ function App() {
   const handleSeatLock = (row, col) => {
     const key = `${row}-${col}`
     const newLockedSeats = new Set(lockedSeats)
-    
+
     if (newLockedSeats.has(key)) {
       newLockedSeats.delete(key)
     } else {
       newLockedSeats.add(key)
     }
-    
+
     setLockedSeats(newLockedSeats)
   }
 
-// 이미지 다운로드 (A4 가로 300DPI 고화질 적용)
-const handleDownloadImage = async () => {
-  if (seatAssignment.length === 0) {
-    alert('배정된 좌석이 없습니다.')
-    return
+  // 이미지 다운로드 (A4 가로 300DPI 고화질 적용)
+  const handleDownloadImage = async () => {
+    if (seatAssignment.length === 0) {
+      alert('배정된 좌석이 없습니다.')
+      return
+    }
+
+    if (!seatGridRef.current) {
+      alert('좌석 배치도를 찾을 수 없습니다.')
+      return
+    }
+
+    setIsDownloading(true)
+
+    try {
+      const element = seatGridRef.current
+
+      // 1. 원본 배치도를 고화질로 캡처 (여백 없이 타이트하게)
+      const sourceCanvas = await html2canvas(element, {
+        scale: 3, // 글자가 깨지지 않도록 기본 3배율 캡처
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+
+      // 2. 가상의 A4 캔버스 생성 (300DPI 기준: 3508px x 2480px)
+      const a4Width = 3508
+      const a4Height = 2480
+      const finalCanvas = document.createElement('canvas')
+      finalCanvas.width = a4Width
+      finalCanvas.height = a4Height
+      const ctx = finalCanvas.getContext('2d')
+
+      // 3. A4 배경을 흰색으로 채우기
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, a4Width, a4Height)
+
+      // 4. 배치도를 A4 중앙에 비율 유지하며 그리기
+      // 여백을 좀 두기 위해 A4 크기의 90%만 사용
+      const maxWidth = a4Width * 0.9
+      const maxHeight = a4Height * 0.9
+
+      const widthRatio = maxWidth / sourceCanvas.width
+      const heightRatio = maxHeight / sourceCanvas.height
+      const scale = Math.min(widthRatio, heightRatio) // 가로/세로 중 더 꽉 차는 쪽 기준
+
+      const finalContentWidth = sourceCanvas.width * scale
+      const finalContentHeight = sourceCanvas.height * scale
+
+      // 정중앙 좌표 계산
+      const x = (a4Width - finalContentWidth) / 2
+      const y = (a4Height - finalContentHeight) / 2
+
+      // 이미지 그리기
+      ctx.drawImage(sourceCanvas, x, y, finalContentWidth, finalContentHeight)
+
+      // 5. 다운로드
+      finalCanvas.toBlob((blob) => {
+        if (blob) {
+          saveAs(blob, `자리배정_${new Date().toISOString().split('T')[0]}.png`)
+        }
+      }, 'image/png')
+
+    } catch (error) {
+      console.error('이미지 다운로드 오류:', error)
+      alert('이미지 다운로드 중 오류가 발생했습니다.')
+    } finally {
+      setIsDownloading(false)
+    }
   }
-
-  if (!seatGridRef.current) {
-    alert('좌석 배치도를 찾을 수 없습니다.')
-    return
-  }
-
-  setIsDownloading(true)
-
-  try {
-    const element = seatGridRef.current
-
-    // 1. 원본 배치도를 고화질로 캡처 (여백 없이 타이트하게)
-    const sourceCanvas = await html2canvas(element, {
-      scale: 3, // 글자가 깨지지 않도록 기본 3배율 캡처
-      useCORS: true,
-      backgroundColor: '#ffffff'
-    })
-
-    // 2. 가상의 A4 캔버스 생성 (300DPI 기준: 3508px x 2480px)
-    const a4Width = 3508
-    const a4Height = 2480
-    const finalCanvas = document.createElement('canvas')
-    finalCanvas.width = a4Width
-    finalCanvas.height = a4Height
-    const ctx = finalCanvas.getContext('2d')
-
-    // 3. A4 배경을 흰색으로 채우기
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, a4Width, a4Height)
-
-    // 4. 배치도를 A4 중앙에 비율 유지하며 그리기
-    // 여백을 좀 두기 위해 A4 크기의 90%만 사용
-    const maxWidth = a4Width * 0.9
-    const maxHeight = a4Height * 0.9
-
-    const widthRatio = maxWidth / sourceCanvas.width
-    const heightRatio = maxHeight / sourceCanvas.height
-    const scale = Math.min(widthRatio, heightRatio) // 가로/세로 중 더 꽉 차는 쪽 기준
-
-    const finalContentWidth = sourceCanvas.width * scale
-    const finalContentHeight = sourceCanvas.height * scale
-
-    // 정중앙 좌표 계산
-    const x = (a4Width - finalContentWidth) / 2
-    const y = (a4Height - finalContentHeight) / 2
-
-    // 이미지 그리기
-    ctx.drawImage(sourceCanvas, x, y, finalContentWidth, finalContentHeight)
-
-    // 5. 다운로드
-    finalCanvas.toBlob((blob) => {
-      if (blob) {
-        saveAs(blob, `자리배정_${new Date().toISOString().split('T')[0]}.png`)
-      }
-    }, 'image/png')
-
-  } catch (error) {
-    console.error('이미지 다운로드 오류:', error)
-    alert('이미지 다운로드 중 오류가 발생했습니다.')
-  } finally {
-    setIsDownloading(false)
-  }
-}
   // CSV 다운로드
   const handleDownloadCSV = () => {
     if (seatAssignment.length === 0) {
@@ -597,14 +597,14 @@ const handleDownloadImage = async () => {
     }
 
     const csvData = []
-    
+
     // 헤더 추가
     csvData.push(['행', '열', '번호', '이름'])
-    
+
     // 좌석 배정 데이터 추가
     const maxRow = Math.max(...seatAssignment.map(s => s.row), 0)
     const cols = seatLayout === 'pair' ? pairsPerRow * 2 : colsPerRow
-    
+
     for (let row = 0; row <= maxRow; row++) {
       for (let col = 0; col < cols; col++) {
         const seat = seatAssignment.find(s => s.row === row && s.col === col)
@@ -672,7 +672,7 @@ const handleDownloadImage = async () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {seatLayout === 'pair' 
+                {seatLayout === 'pair'
                   ? '한 줄에 몇 분단(짝)을 배치할까요?'
                   : '한 줄에 몇 명(열)을 배치할까요?'
                 }
@@ -765,38 +765,38 @@ const handleDownloadImage = async () => {
                   교실 배치도
                 </h2>
 
-                    {/* 2. 상단 여백 */}
-                    <div style={{ height: '40px' }}></div>
+                {/* 2. 상단 여백 */}
+                <div style={{ height: '40px' }}></div>
 
-                    {/* 3. 좌석 영역 */}
-                    <SeatGrid
-                      layout={SEAT_LAYOUTS[seatLayout]}
-                      seatLayout={seatLayout}
-                      assignment={seatAssignment}
-                      onSeatUpdate={handleSeatUpdate}
-                      onSeatLock={handleSeatLock}
-                      pairsPerRow={pairsPerRow}
-                      colsPerRow={colsPerRow}
-                      lockedSeats={lockedSeats}
-                    />
+                {/* 3. 좌석 영역 */}
+                <SeatGrid
+                  layout={SEAT_LAYOUTS[seatLayout]}
+                  seatLayout={seatLayout}
+                  assignment={seatAssignment}
+                  onSeatUpdate={handleSeatUpdate}
+                  onSeatLock={handleSeatLock}
+                  pairsPerRow={pairsPerRow}
+                  colsPerRow={colsPerRow}
+                  lockedSeats={lockedSeats}
+                />
 
-                    {/* 4. 하단 여백 */}
-                    <div style={{ height: '40px' }}></div>
+                {/* 4. 하단 여백 */}
+                <div style={{ height: '40px' }}></div>
 
-                    {/* 5. 교탁 */}
-                    <div className="flex justify-center">
-                      <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-3 rounded-lg shadow-md font-bold text-lg">
-                        🖥️ 교탁
-                      </div>
-                    </div>
+                {/* 5. 교탁 */}
+                <div className="flex justify-center">
+                  <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-3 rounded-lg shadow-md font-bold text-lg">
+                    🖥️ 교탁
                   </div>
                 </div>
-              )}
+              </div>
             </div>
+              )}
           </div>
         </div>
       </div>
     </div>
+    </div >
   )
 }
 
