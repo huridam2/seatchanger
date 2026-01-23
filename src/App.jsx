@@ -520,7 +520,7 @@ function App() {
     setLockedSeats(newLockedSeats)
   }
 
-  // 이미지 다운로드 (A4 가로 300DPI 고화질 적용)
+  // 이미지 다운로드 (수정됨: 꽉 찬 A4 고화질)
   const handleDownloadImage = async () => {
     if (seatAssignment.length === 0) {
       alert('배정된 좌석이 없습니다.')
@@ -536,52 +536,29 @@ function App() {
 
     try {
       const element = seatGridRef.current
+      
+      // A4 가로 픽셀(3508px)에 맞춰서 확대 비율을 자동 계산
+      const targetWidth = 3508
+      const currentWidth = element.offsetWidth
+      const scale = targetWidth / currentWidth
 
-      // 1. 원본 배치도를 고화질로 캡처 (여백 없이 타이트하게)
-      const sourceCanvas = await html2canvas(element, {
-        scale: 3, // 글자가 깨지지 않도록 기본 3배율 캡처
+      // html2canvas로 캡처
+      const canvas = await html2canvas(element, {
+        scale: scale, 
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        // 캡처 시 불필요한 스크롤이나 여백 제거
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight
       })
 
-      // 2. 가상의 A4 캔버스 생성 (300DPI 기준: 3508px x 2480px)
-      const a4Width = 3508
-      const a4Height = 2480
-      const finalCanvas = document.createElement('canvas')
-      finalCanvas.width = a4Width
-      finalCanvas.height = a4Height
-      const ctx = finalCanvas.getContext('2d')
-
-      // 3. A4 배경을 흰색으로 채우기
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, a4Width, a4Height)
-
-      // 4. 배치도를 A4 중앙에 비율 유지하며 그리기
-      // 여백을 좀 두기 위해 A4 크기의 90%만 사용
-      const maxWidth = a4Width * 0.9
-      const maxHeight = a4Height * 0.9
-
-      const widthRatio = maxWidth / sourceCanvas.width
-      const heightRatio = maxHeight / sourceCanvas.height
-      const scale = Math.min(widthRatio, heightRatio) // 가로/세로 중 더 꽉 차는 쪽 기준
-
-      const finalContentWidth = sourceCanvas.width * scale
-      const finalContentHeight = sourceCanvas.height * scale
-
-      // 정중앙 좌표 계산
-      const x = (a4Width - finalContentWidth) / 2
-      const y = (a4Height - finalContentHeight) / 2
-
-      // 이미지 그리기
-      ctx.drawImage(sourceCanvas, x, y, finalContentWidth, finalContentHeight)
-
-      // 5. 다운로드
-      finalCanvas.toBlob((blob) => {
+      canvas.toBlob((blob) => {
         if (blob) {
           saveAs(blob, `자리배정_${new Date().toISOString().split('T')[0]}.png`)
         }
       }, 'image/png')
-
     } catch (error) {
       console.error('이미지 다운로드 오류:', error)
       alert('이미지 다운로드 중 오류가 발생했습니다.')
