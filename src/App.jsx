@@ -520,44 +520,75 @@ function App() {
     setLockedSeats(newLockedSeats)
   }
 
-  // 이미지 다운로드 (수정됨: 보이는 그대로 여백 없이 다운로드)
-  const handleDownloadImage = async () => {
-    if (seatAssignment.length === 0) {
-      alert('배정된 좌석이 없습니다.')
-      return
-    }
-
-    if (!seatGridRef.current) {
-      alert('좌석 배치도를 찾을 수 없습니다.')
-      return
-    }
-
-    setIsDownloading(true)
-
-    try {
-      const element = seatGridRef.current
-
-      // html2canvas로 캡처 (A4 강제 변환 로직 제거하고 직접 캡처)
-      const canvas = await html2canvas(element, {
-        scale: 3, // 고해상도
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      })
-
-      // 캡처된 그대로 다운로드 (여백 없음)
-      canvas.toBlob((blob) => {
-        if (blob) {
-          saveAs(blob, `자리배정_${new Date().toISOString().split('T')[0]}.png`)
-        }
-      }, 'image/png')
-    } catch (error) {
-      console.error('이미지 다운로드 오류:', error)
-      alert('이미지 다운로드 중 오류가 발생했습니다.')
-    } finally {
-      setIsDownloading(false)
-    }
+// 이미지 다운로드 (A4 가로 300DPI 고화질 적용)
+const handleDownloadImage = async () => {
+  if (seatAssignment.length === 0) {
+    alert('배정된 좌석이 없습니다.')
+    return
   }
 
+  if (!seatGridRef.current) {
+    alert('좌석 배치도를 찾을 수 없습니다.')
+    return
+  }
+
+  setIsDownloading(true)
+
+  try {
+    const element = seatGridRef.current
+
+    // 1. 원본 배치도를 고화질로 캡처 (여백 없이 타이트하게)
+    const sourceCanvas = await html2canvas(element, {
+      scale: 3, // 글자가 깨지지 않도록 기본 3배율 캡처
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    })
+
+    // 2. 가상의 A4 캔버스 생성 (300DPI 기준: 3508px x 2480px)
+    const a4Width = 3508
+    const a4Height = 2480
+    const finalCanvas = document.createElement('canvas')
+    finalCanvas.width = a4Width
+    finalCanvas.height = a4Height
+    const ctx = finalCanvas.getContext('2d')
+
+    // 3. A4 배경을 흰색으로 채우기
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, a4Width, a4Height)
+
+    // 4. 배치도를 A4 중앙에 비율 유지하며 그리기
+    // 여백을 좀 두기 위해 A4 크기의 90%만 사용
+    const maxWidth = a4Width * 0.9
+    const maxHeight = a4Height * 0.9
+
+    const widthRatio = maxWidth / sourceCanvas.width
+    const heightRatio = maxHeight / sourceCanvas.height
+    const scale = Math.min(widthRatio, heightRatio) // 가로/세로 중 더 꽉 차는 쪽 기준
+
+    const finalContentWidth = sourceCanvas.width * scale
+    const finalContentHeight = sourceCanvas.height * scale
+
+    // 정중앙 좌표 계산
+    const x = (a4Width - finalContentWidth) / 2
+    const y = (a4Height - finalContentHeight) / 2
+
+    // 이미지 그리기
+    ctx.drawImage(sourceCanvas, x, y, finalContentWidth, finalContentHeight)
+
+    // 5. 다운로드
+    finalCanvas.toBlob((blob) => {
+      if (blob) {
+        saveAs(blob, `자리배정_${new Date().toISOString().split('T')[0]}.png`)
+      }
+    }, 'image/png')
+
+  } catch (error) {
+    console.error('이미지 다운로드 오류:', error)
+    alert('이미지 다운로드 중 오류가 발생했습니다.')
+  } finally {
+    setIsDownloading(false)
+  }
+}
   // CSV 다운로드
   const handleDownloadCSV = () => {
     if (seatAssignment.length === 0) {
@@ -721,41 +752,18 @@ function App() {
 
           {/* 중앙: 좌석 배치 */}
           <div className="lg:col-span-3 flex flex-col gap-4">
-            {/* 바깥쪽 래퍼: 화면 중앙 정렬 담당 */}
-            <div className="w-full text-center overflow-auto" style={{ backgroundColor: 'transparent' }}>
-              
-              {/* [수정됨] 학생 데이터가 없을 때: 초기 안내 화면 표시 */}
-              {students.length === 0 ? (
-                <div className="bg-white rounded-lg shadow-md p-12 flex flex-col items-center justify-center h-96 border-2 border-dashed border-gray-300">
-                  <div className="text-6xl mb-6">👋</div>
-                  <h3 className="text-2xl font-bold text-gray-700 mb-4">환영합니다!</h3>
-                  <p className="text-gray-500 mb-8 text-center max-w-md">
-                    왼쪽에서 학생 명단을 추가하거나, <br/>아래 버튼을 눌러 예시 데이터로 바로 시작해보세요.
-                  </p>
-                  <button
-                    onClick={handleLoadSampleData}
-                    className="bg-purple-600 text-white px-8 py-3 rounded-full hover:bg-purple-700 transition-all transform hover:scale-105 shadow-lg font-bold flex items-center gap-2"
-                  >
-                    <span>🎮</span> 예시 데이터로 체험하기
-                  </button>
-                </div>
-              ) : (
-                /* 학생 데이터가 있을 때: 기존 배치도 표시 */
-                <div
-                  ref={seatGridRef}
-                  id="seat-grid-container"
-                  style={{
-                    display: 'inline-block', // [중요] 내용물 크기만큼만 박스가 줄어듦
-                    width: 'auto',           
-                    padding: '20px',         // 여백 최소화
-                    backgroundColor: 'white'
-                  }}
-                >
-                  <div className="flex flex-col items-center justify-center">
-                    {/* 1. 제목 영역 */}
-                    <h2 className="text-2xl font-bold text-gray-800 text-center">
-                      교실 배치도
-                    </h2>
+            {/* 계층 1: 화면 배치용 (캡처되지 않음) */}
+            <div className="w-full flex justify-center overflow-auto">
+              {/* 계층 2: 캡처 타겟 (ref 연결) */}
+              <div
+                ref={seatGridRef}
+                id="seat-grid-container"
+                className="w-fit h-fit bg-white flex flex-col items-center justify-center p-12"
+              >
+                {/* 1. 제목 영역 */}
+                <h2 className="text-2xl font-bold text-gray-800 text-center">
+                  교실 배치도
+                </h2>
 
                     {/* 2. 상단 여백 */}
                     <div style={{ height: '40px' }}></div>
