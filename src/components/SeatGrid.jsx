@@ -106,7 +106,7 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
   if (isPairLayout) {
     if (maxRow < 0) {
       seatArea = (
-        <div className="text-center text-gray-500 py-8" style={{ transform: 'scaleY(-1)' }}>
+        <div className="text-center text-gray-500 py-8" style={{ transform: 'scaleY(-1) translateZ(0)' }}>
           좌석 배정을 시작하려면 "자리 배정하기" 버튼을 클릭하세요.
         </div>
       )
@@ -262,7 +262,7 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
       seatArea = (
         <div
           className="text-center text-gray-500 py-8"
-          style={{ transform: 'scaleY(-1)' }}
+          style={{ transform: 'scaleY(-1) translateZ(0)' }}
         >
           좌석 배정을 시작하려면 "자리 배정하기" 버튼을 클릭하세요.
         </div>
@@ -389,3 +389,4 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
 export default SeatGrid
 
 // Layout Fixed v2
+// Final Layout Fix v3

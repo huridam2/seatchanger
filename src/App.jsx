@@ -740,7 +740,7 @@ function App() {
               <div
                 ref={seatGridRef}
                 id="seat-grid-container"
-                className="w-fit h-fit bg-white flex flex-col items-center justify-center gap-10 p-12"
+                className="w-fit h-fit bg-white flex flex-col items-center justify-center space-y-12 p-12"
               >
                 {/* 계층 3: 내용물 (창가 + 좌석 + 복도) */}
                 <SeatGrid
