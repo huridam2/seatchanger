@@ -107,7 +107,7 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
     if (maxRow < 0) {
       seatArea = (
         <div className="text-center text-gray-500 py-8" style={{ transform: 'scaleY(-1) translateZ(0)' }}>
-          좌석 배정을 시작하려면 "자리 배정하기" 버튼을 클릭하세요.
+          <span className="text-4xl font-bold">.</span>
         </div>
       )
     } else {
@@ -264,7 +264,7 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
           className="text-center text-gray-500 py-8"
           style={{ transform: 'scaleY(-1) translateZ(0)' }}
         >
-          좌석 배정을 시작하려면 "자리 배정하기" 버튼을 클릭하세요.
+          <span className="text-4xl font-bold">.</span>
         </div>
       )
     } else {
@@ -343,16 +343,12 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
   }
 
   return (
-    <div id="seat-grid-wrapper" className="bg-white rounded-lg shadow-lg px-6 py-16 flex flex-col items-center justify-center gap-12">
+    <div id="seat-grid-wrapper" className="bg-white rounded-lg shadow-lg px-6 py-16 flex flex-col items-center justify-center">
       <div
         id="seat-grid-content"
-        className="w-full flex flex-col gap-8"
+        className="w-full flex flex-col"
         style={{ display: 'inline-block', width: 'fit-content', minWidth: '100%' }}
       >
-        <h2 className="text-2xl font-bold text-gray-800 text-center">
-          교실 배치도
-        </h2>
-
         {/* 상단: 좌석 그리드 + 창가/복도 */}
         <div className="flex items-stretch gap-4 w-full">
           {/* 복도 (왼쪽) - 항상 표시 */}
@@ -374,13 +370,6 @@ function SeatGrid({ layout, seatLayout, assignment, onSeatUpdate, onSeatLock, pa
             </div>
           </div>
         </div>
-
-        {/* 하단: 교탁 (캡처 포함) */}
-        <div className="flex justify-center">
-          <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-4 rounded-lg shadow-md font-bold text-lg">
-            🖥️ 교탁
-          </div>
-        </div>
       </div>
     </div>
   )
@@ -390,3 +379,4 @@ export default SeatGrid
 
 // Layout Fixed v2
 // Final Layout Fix v3
+// Physical Spacer Implementation v4

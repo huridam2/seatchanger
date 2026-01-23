@@ -740,9 +740,17 @@ function App() {
               <div
                 ref={seatGridRef}
                 id="seat-grid-container"
-                className="w-fit h-fit bg-white flex flex-col items-center justify-center space-y-12 p-12"
+                className="w-fit h-fit bg-white flex flex-col items-center justify-center p-12"
               >
-                {/* 계층 3: 내용물 (창가 + 좌석 + 복도) */}
+                {/* 1. 제목 영역 */}
+                <h2 className="text-2xl font-bold text-gray-800 text-center">
+                  교실 배치도
+                </h2>
+
+                {/* 2. 강제 여백 박스 1 (높이 60px) */}
+                <div style={{ height: '60px' }}></div>
+
+                {/* 3. 좌석 영역 (창가-좌석-복도) */}
                 <SeatGrid
                   layout={SEAT_LAYOUTS[seatLayout]}
                   seatLayout={seatLayout}
@@ -753,6 +761,16 @@ function App() {
                   colsPerRow={colsPerRow}
                   lockedSeats={lockedSeats}
                 />
+
+                {/* 4. 강제 여백 박스 2 (높이 60px) */}
+                <div style={{ height: '60px' }}></div>
+
+                {/* 5. 교탁 */}
+                <div className="flex justify-center">
+                  <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-12 py-4 rounded-lg shadow-md font-bold text-lg">
+                    🖥️ 교탁
+                  </div>
+                </div>
               </div>
             </div>
           </div>
